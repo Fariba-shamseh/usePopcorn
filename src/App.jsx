@@ -250,10 +250,56 @@ function Movie({movie,onSelectMovie}){
 //     )
 // }
 function MovieDetils({selectId,onCloseMovie}){
+    const [movie,setmovie]=useState({})
+
+    const {
+        Title:title,
+        Year:year,
+        Poster:poster,
+        Runtime:runtime,
+        imdbRating,
+        Plot:plot,
+        Released:released,
+        Actors:actors,
+        Genre:genre,
+        Director:director,
+    }=movie;//destructure
+
+    useEffect(function (){
+        async function getMovieDetails(){
+            const res=await fetch(
+                `http://www.omdbapi.com/?apikey=${key}&i=${selectId}`
+            );
+            const data=await res.json();
+            console.log(data);
+            setmovie(data)
+        }
+        getMovieDetails()
+    },[])
+
     return(
         <div className="details">
+            <header>
             <button onClick={onCloseMovie}>&larr;</button>
-            {selectId}
+                <img src={poster} alt={`poster of ${movie} movie`}/>
+        <div className="details-overview">
+            <h2>{title}</h2>
+            <p>
+                {released} &bull;{runtime}
+            </p>
+            <p>{genre}</p>
+            <p>
+                <span>🌟</span>
+                {imdbRating} IMDb rating
+            </p>
+        </div>
+            </header>
+            <section>
+                <p><em>{plot}</em></p>
+                <p>Starring {actors}</p>
+                <p>Directed by {director}</p>
+            </section>
+                {selectId}
         </div>
     )
 }
