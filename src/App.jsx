@@ -75,22 +75,29 @@ export default function App() {
     // fetch(`http://www.omdbapi.com/?apikey=${key}&s=The Matrix`).then((res)=>res.json()).then((data)=>setMovies(data.Search));
 
     useEffect(function (){
+        const controller=new AbortController();
+
     async function fetchMovies(){
         try {
             setIsLoading(true);
             setError("");//Reset error
-            const res = await fetch(`http://www.omdbapi.com/?apikey=${key}&s=${query}`);
+            const res = await fetch(`http://www.omdbapi.com/?apikey=${key}&s=${query}`, {signal: controller.signal});
             if (!res.ok) throw new Error("something went wrong with fetching movies");
             const data = await res.json();
             console.log(data);
             if(data.Response==="False") throw new Error("Movie not found!");
             setMovies(data.Search);
+            setError("");
             console.log(data.Search);
             setIsLoading(false);
 
         }catch (err){
             console.error(err.message);
-            setError(err.message);
+
+            if(err.name !== "AbortError"){
+                setError(err.message);
+            }
+
         }finally {
             setIsLoading(false);
         }
@@ -101,6 +108,10 @@ export default function App() {
         }
     }
     fetchMovies();
+
+    return function (){
+        controller.abort();
+    };
     },[query]);
 
     function handleSelectMovie(id){
