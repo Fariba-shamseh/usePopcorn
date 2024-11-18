@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react";
+import {useCallback, useEffect, useState} from "react";
 import StarRating from "./StarRating.jsx";
 
 const tempMovieData = [
@@ -92,9 +92,9 @@ export default function App() {
             setIsLoading(false);
 
         }catch (err){
-            console.error(err.message);
 
             if(err.name !== "AbortError"){
+                console.error(err.message);
                 setError(err.message);
             }
 
@@ -107,6 +107,8 @@ export default function App() {
             return;
         }
     }
+
+    handleCloseMovie();
     fetchMovies();
 
     return function (){
@@ -128,6 +130,8 @@ export default function App() {
     function handleDeleteWatched(id){
         setWatched(watched=>watched.filter((movie)=>movie.imdbID !==id))
     }
+
+
     return (
         <>
             <Navbar><Search query={query} setQuery={setQuery}/><Numresults movies={movies} /></Navbar>
@@ -298,8 +302,24 @@ function MovieDetils({selectId,onCloseMovie,onAddWatched,watched}){
             runtime:Number(runtime.split(' ').at(0)),
             userRating,
         }
-        onAddWatched(newWatchedMovie)
+        onAddWatched(newWatchedMovie);
+        onCloseMovie();
     }
+
+    useEffect(function (){
+       function callback(e){
+            if(e.code === "Escape"){
+                onCloseMovie();
+                console.log("CLOSEING");
+            }
+        }
+        document.addEventListener("keydown",callback);
+
+        return function (){
+            document.removeEventListener("keydown",callback);
+        };
+    },[]);
+
 
     useEffect(function (){
         async function getMovieDetails(){
